@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Controle de Opções">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>Controle de Opções</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #0f172a;
+      --card:   #1e293b;
+      --border: #334155;
+      --accent: #3b82f6;
+      --text:   #f1f5f9;
+      --muted:  #94a3b8;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Tela de abertura ── */
+    #splash {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      text-align: center;
+      animation: fadein .4s ease;
+    }
+    @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+
+    .logo {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #3b82f6, #10b981);
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+    }
+    h1 { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+    .sub { font-size: 14px; color: var(--muted); }
+
+    /* Spinner */
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Tela de setup (primeira vez) ── */
+    #setup {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 380px;
+    }
+    #setup h2 { font-size: 18px; font-weight: 700; }
+    #setup p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    input[type=url] {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: monospace;
+    }
+    input[type=url]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+    input[type=url]::placeholder { color: var(--muted); }
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:active { opacity: .85; }
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash: aparece enquanto redireciona -->
+  <div id="splash">
+    <div class="logo">📊</div>
+    <div>
+      <h1>Controle de Opções</h1>
+      <div class="sub">Abrindo o painel...</div>
+    </div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Setup: aparece apenas na primeira vez -->
+  <div id="setup">
+    <div class="logo">📊</div>
+    <div>
+      <h2>Configure a URL do app</h2>
+      <p>Cole abaixo a URL do seu WebApp do Google Apps Script:</p>
+    </div>
+    <input type="url" id="url-input"
+      placeholder="https://script.google.com/macros/s/.../exec">
+    <button onclick="salvar()">Abrir o App</button>
+    <p class="hint">
+      No GAS Editor: <strong>Implantar → Gerenciar implantações</strong><br>
+      Copie a <strong>URL do app da web</strong> e cole acima.
+    </p>
+  </div>
+
+<script>
+  const KEY = 'gas_webapp_url';
+
+  function abrir(url) {
+    // Redireciona para o WebApp GAS preservando o comportamento de app
+    window.location.replace(url);
+  }
+
+  function salvar() {
+    const url = document.getElementById('url-input').value.trim();
+    if (!url.startsWith('https://')) {
+      alert('URL inválida. Deve começar com https://');
+      return;
+    }
+    localStorage.setItem(KEY, url);
+    abrir(url);
+  }
+
+  // Inicialização
+  const url = localStorage.getItem(KEY);
+  if (url) {
+    abrir(url);
+  } else {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('setup').style.display  = 'flex';
+  }
+</script>
+</body>
+</html>
