@@ -135,14 +135,13 @@
       <p>Cole abaixo a URL do seu WebApp do Google Apps Script:</p>
     </div>
     <input type="url" id="url-input"
-      value="https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/dev"
       placeholder="https://script.google.com/macros/s/.../dev">
     <p id="error-msg" class="error"></p>
     <button onclick="salvar()">Abrir o App</button>
     <p class="hint">
       Este launcher é restrito ao app pessoal do Bruno.<br>
-      A URL precisa ser exatamente a autorizada acima — links de teste (<strong>/dev</strong>) só
-      abrem para quem está logado na conta Google dona do script.
+      Só abre com a URL exata autorizada — links de teste (<strong>/dev</strong>) só
+      funcionam para quem está logado na conta Google dona do script.
     </p>
     <p class="hint" style="margin-top:4px;">
       <strong>Para instalar como app:</strong><br>
@@ -153,8 +152,10 @@
   </div>
 
 <script>
-  const KEY = 'gas_webapp_url';
-  // Única URL autorizada — protege contra alguém abrir esta página e cair no app de outra pessoa.
+  // Única URL autorizada. Não é persistida em localStorage de propósito: numa
+  // aba de navegador comum, SEMPRE pedimos e validamos a URL — só o modo
+  // standalone (app já instalado, ícone na tela de início) pula essa etapa,
+  // porque instalar exige uma ação explícita do dono do celular.
   const VALID_URL = 'https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/dev';
 
   function abrir(url) {
@@ -181,7 +182,6 @@
       mostrarErro('URL não reconhecida. Este launcher só abre o app autorizado.');
       return;
     }
-    localStorage.setItem(KEY, url);
     abrir(url);
   }
 
@@ -193,21 +193,16 @@
   }
 
   // Inicialização
-  const url = localStorage.getItem(KEY);
-  const temUrlValida = (url === VALID_URL);
-  if (url && !temUrlValida) localStorage.removeItem(KEY); // URL salva não bate mais com a autorizada (ex.: versão antiga /exec)
-
-  if (temUrlValida && isStandalone()) {
+  if (isStandalone()) {
     // App instalado (ícone na tela de início): pula direto pro GAS, sem esta tela.
-    abrir(url);
+    abrir(VALID_URL);
   } else {
-    // Aba normal do navegador: fica aqui de propósito. É NESTA página (com o
-    // manifest/ícone/service worker) que "Adicionar à Tela de Início" precisa
-    // ser acionado — se redirecionássemos direto pro GAS, o navegador
-    // instalaria um atalho pro domínio do Google, sem PWA nenhum.
+    // Aba normal do navegador (inclusive a de uso diário): fica aqui de
+    // propósito, sempre pedindo a URL em branco. É NESTA página (com o
+    // manifest/ícone/service worker) que "Adicionar à Tela de Início"
+    // precisa ser acionado.
     document.getElementById('splash').style.display = 'none';
     document.getElementById('setup').style.display  = 'flex';
-    if (temUrlValida) document.getElementById('url-input').value = url;
   }
 </script>
 </body>
