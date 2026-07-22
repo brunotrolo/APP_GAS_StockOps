@@ -102,6 +102,17 @@
       text-align: center;
       line-height: 1.6;
     }
+    .error {
+      display: none;
+      font-size: 12px;
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -124,28 +135,37 @@
       <p>Cole abaixo a URL do seu WebApp do Google Apps Script:</p>
     </div>
     <input type="url" id="url-input"
-      value="https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/exec"
-      placeholder="https://script.google.com/macros/s/.../exec">
+      value="https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/dev"
+      placeholder="https://script.google.com/macros/s/.../dev">
+    <p id="error-msg" class="error"></p>
     <button onclick="salvar()">Abrir o App</button>
     <p class="hint">
-      No GAS Editor: <strong>Implantar → Gerenciar implantações</strong><br>
-      Copie a <strong>URL do app da web</strong> e cole acima.<br>
-      A URL deve terminar em <strong>/exec</strong> — links terminados em <strong>/dev</strong> só funcionam para quem tem acesso de edição ao script.
+      Este launcher é restrito ao app pessoal do Bruno.<br>
+      A URL precisa ser exatamente a autorizada acima — links de teste (<strong>/dev</strong>) só
+      abrem para quem está logado na conta Google dona do script.
     </p>
   </div>
 
 <script>
   const KEY = 'gas_webapp_url';
+  // Única URL autorizada — protege contra alguém abrir esta página e cair no app de outra pessoa.
+  const VALID_URL = 'https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/dev';
 
   function abrir(url) {
     // Redireciona para o WebApp GAS preservando o comportamento de app
     window.location.replace(url);
   }
 
+  function mostrarErro(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
   function salvar() {
     const url = document.getElementById('url-input').value.trim();
-    if (!url.startsWith('https://')) {
-      alert('URL inválida. Deve começar com https://');
+    if (url !== VALID_URL) {
+      mostrarErro('URL não reconhecida. Este launcher só abre o app autorizado.');
       return;
     }
     localStorage.setItem(KEY, url);
@@ -161,9 +181,10 @@
 
   // Inicialização
   const url = localStorage.getItem(KEY);
-  if (url) {
+  if (url === VALID_URL) {
     abrir(url);
   } else {
+    if (url) localStorage.removeItem(KEY);   // URL salva não bate mais com a autorizada (ex.: versão antiga /exec)
     document.getElementById('splash').style.display = 'none';
     document.getElementById('setup').style.display  = 'flex';
   }
