@@ -124,11 +124,13 @@
       <p>Cole abaixo a URL do seu WebApp do Google Apps Script:</p>
     </div>
     <input type="url" id="url-input"
+      value="https://script.google.com/macros/s/AKfycbzFYVHCWG9D6lfkPuylb5_-uMY5_S0H8rcwDu9pAcXi/exec"
       placeholder="https://script.google.com/macros/s/.../exec">
     <button onclick="salvar()">Abrir o App</button>
     <p class="hint">
       No GAS Editor: <strong>Implantar → Gerenciar implantações</strong><br>
-      Copie a <strong>URL do app da web</strong> e cole acima.
+      Copie a <strong>URL do app da web</strong> e cole acima.<br>
+      A URL deve terminar em <strong>/exec</strong> — links terminados em <strong>/dev</strong> só funcionam para quem tem acesso de edição ao script.
     </p>
   </div>
 
@@ -148,6 +150,13 @@
     }
     localStorage.setItem(KEY, url);
     abrir(url);
+  }
+
+  // Registra o Service Worker (necessário para instalação como PWA)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function(err) {
+      console.warn('Falha ao registrar o Service Worker:', err);
+    });
   }
 
   // Inicialização
