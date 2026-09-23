@@ -9,8 +9,11 @@ fi
 # Install OpLab MCP server dependencies
 pip3 install mcp httpx --ignore-installed --break-system-packages -q 2>&1 | tail -3
 
-# Resolve token: prefer env var, fall back to embedded value
-OPLAB_TOKEN="${OPLAB_ACCESS_TOKEN:-AnJFCmWtZiSCL9Up1F2slrKpbhg/SIUuWj7ohDwxQ4Uvk1/2CY9bUI8KaPofVzT0--X8vvuqmk7JeKDuYquob/lA==--MzVlYTVhYzY0ODkyM2Y0Y2ZlOTkwMjcyNTM2ZWFjNDg=}"
+# Token must come from the environment — never embed a real token here.
+if [ -z "${OPLAB_ACCESS_TOKEN:-}" ]; then
+  echo "AVISO: OPLAB_ACCESS_TOKEN não definida no ambiente; MCP server do OpLab não terá acesso à API." >&2
+fi
+OPLAB_TOKEN="${OPLAB_ACCESS_TOKEN:-}"
 
 # Write MCP server config into ~/.claude/settings.json
 # Reads existing file and merges, preserving all other settings
